@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ошибки компиляции — ArduInfo</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #00979D; --accent-light: #00b5bd;
+  --bg: #090e12; --surface: #111820; --surface-2: #19202a;
+  --text: #e1e8ee; --muted: #7d8fa3; --border: #212b38;
+  --danger: #c0392b; --ok: #27ae60;
+  --font: 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+body { background: var(--bg); color: var(--text); font-family: var(--font); padding: 24px; line-height: 1.6; }
+.container { max-width: 840px; margin: 0 auto; }
+h1 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
+.lead { color: var(--muted); margin-bottom: 24px; font-size: .95rem; }
+.search-box {
+  width: 100%; padding: 12px 16px; font-size: 1rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); margin-bottom: 24px; outline: none; transition: border .15s, box-shadow .15s;
+  box-sizing: border-box; font-family: var(--font);
+}
+.search-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,151,157,.15); }
+.error-card {
+  background: var(--surface); border-left: 3px solid var(--danger);
+  border-radius: 8px; padding: 20px; margin-bottom: 16px;
+  border: 1px solid var(--border); border-left-width: 3px;
+}
+.error-title {
+  color: #e74c3c; font-family: var(--mono);
+  font-size: .88rem; margin-bottom: 8px; font-weight: 700;
+}
+.error-desc { font-size: .95rem; margin-bottom: 14px; color: var(--text); }
+.solution-box {
+  background: var(--surface-2); border: 1px solid var(--border);
+  padding: 14px; border-radius: 6px;
+}
+.solution-title { color: var(--accent-light); font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+.solution-text { font-size: .9rem; color: var(--text); }
+.solution-text code { background: rgba(0,151,157,.12); padding: 2px 6px; border-radius: 4px; font-family: var(--mono); font-size: .85rem; color: var(--accent-light); }
+.code-fix {
+  background: #0a0f14; padding: 12px; border-radius: 6px; font-family: var(--mono);
+  margin-top: 12px; color: #c9d1d9; border: 1px solid var(--border);
+  overflow-x: auto; font-size: .85rem; line-height: 1.5;
+}
+.code-fix .highlight { color: var(--accent-light); font-weight: 700; }
+.empty { color: var(--muted); text-align: center; padding: 40px; }
+.back { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: .9rem; margin-bottom: 16px; }
+.back:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="index.html#">← На главную</a>
+  <h1>Ошибки компиляции</h1>
+  <p class="lead">Поиск по тексту ошибки из Arduino IDE. Работает даже с частичным совпадением.</p>
+
+  <input type="text" id="searchInput" class="search-box" placeholder="Например: expected ';' before '}' token…" autocomplete="off">
+
+  <div id="results"></div>
+</div>
+
+<script>
+const ERRORS_DB = [
+  { title: "expected ';' before '}' token", keywords: ["expected","semicolon","token","before"], desc: "Пропущена точка с запятой.", solution: "Проверьте строку перед закрывающей скобкой. Добавьте <code>;</code> после вызова функции.", example: "digitalWrite(13, HIGH)<span class='highlight'>;</span>" },
+  { title: "expected '}' at end of input", keywords: ["expected","end","input","brace"], desc: "Не хватает закрывающей фигурной скобки.", solution: "Проверьте парность скобок. Каждой <code>{</code> должна соответствовать <code>}</code>.", example: "void loop() { ... <span class='highlight'>}</span>" },
+  { title: "expected initializer before 'int'", keywords: ["expected","initializer","before","int"], desc: "Пропущена <code>;</code> или скобка перед объявлением переменной.", solution: "Убедитесь, что предыдущая инструкция завершена точкой с запятой.", example: "int x = 5;<br><span class='highlight'>int y = 10;</span>" },
+  { title: "stray '\\' in program", keywords: ["stray","backslash","program"], desc: "Лишний обратный слэш в коде.", solution: "Удалите символ <code>\\</code> из указанной строки.", example: "" },
+  { title: "stray '\\234' in program", keywords: ["stray","234","quotes","smart"], desc: "В код попали «умные» кавычки при копировании из Word/PDF.", solution: "Замените кавычки на полуширинные <code>\"</code> и <code>'</code>.", example: "" },
+  { title: "missing terminating \" character", keywords: ["missing","terminating","character","quote"], desc: "Не закрыта двойная кавычка.", solution: "Поставьте закрывающую <code>\"</code> в конце строки.", example: "Serial.print(<span class='highlight'>\"Hello\"</span>);" },
+  { title: "'variable' was not declared in this scope", keywords: ["declared","scope","variable"], desc: "Переменная не объявлена или опечатка в имени.", solution: "Проверьте написание и регистр. Объявите переменную до использования.", example: "<span class='highlight'>int ledPin = 13;</span>" },
+  { title: "'pinMode' was not declared in this scope", keywords: ["pinmode","declared","scope"], desc: "Опечатка в названии функции.", solution: "Функции чувствительны к регистру: <code>pinMode</code> — верно, <code>pinmode</code> — нет.", example: "<span class='highlight'>pinMode</span>(13, OUTPUT);" },
+  { title: "'Serial' was not declared in this scope", keywords: ["serial","declared","scope"], desc: "Не вызван Serial.begin() или опечатка.", solution: "Добавьте <code>Serial.begin(9600);</code> в setup().", example: "void setup() { <span class='highlight'>Serial.begin(9600);</span> }" },
+  { title: "redefinition of 'void setup()'", keywords: ["redefinition","setup","duplicate"], desc: "Функция setup() объявлена дважды.", solution: "В скетче может быть только одна <code>setup()</code> и одна <code>loop()</code>.", example: "" },
+  { title: "undefined reference to 'setup'", keywords: ["undefined","reference","setup"], desc: "В скетче отсутствует обязательная функция.", solution: "Добавьте <code>void setup() { }</code> и <code>void loop() { }</code>.", example: "void setup() { }<br>void loop() { }" },
+  { title: "'DHT' does not name a type", keywords: ["dht","does not name","type","library"], desc: "Библиотека не установлена или не подключена.", solution: "Установите «DHT sensor library» от Adafruit через Менеджер библиотек.", example: "<span class='highlight'>#include &lt;DHT.h&gt;</span>" },
+  { title: "invalid conversion from 'int' to 'const char*'", keywords: ["invalid","conversion","int","char"], desc: "Число передано туда, где ожидается строка.", solution: "Используйте <code>String(число)</code>.", example: "Serial.print(<span class='highlight'>String(123)</span>);" },
+  { title: "cannot convert 'String' to 'const char*'", keywords: ["string","char","convert","const"], desc: "Функция ожидает C-строку, а передан объект String.", solution: "Используйте <code>.c_str()</code>.", example: "Serial.print(<span class='highlight'>myString.c_str()</span>);" },
+  { title: "invalid conversion from 'const char*' to 'char'", keywords: ["invalid","char","quotes"], desc: "Строка в двойных кавычках присвоена типу char.", solution: "Для одного символа используйте одинарные кавычки.", example: "char grade = <span class='highlight'>'A'</span>;" },
+  { title: "conversion from 'double' to 'float'", keywords: ["double","float","conversion"], desc: "Потеря точности при преобразовании.", solution: "Приведите явно: <code>(float)3.14</code>.", example: "float f = <span class='highlight'>(float)</span>3.1415926535;" },
+  { title: "fatal error: <library>: No such file or directory", keywords: ["fatal","no such file","library","include"], desc: "Библиотека не установлена или имя файла с ошибкой.", solution: "Установите библиотеку через Менеджер. Проверьте регистр в #include.", example: "<span class='highlight'>#include &lt;Servo.h&gt;</span>" },
+  { title: "Multiple libraries were found for 'DHT.h'", keywords: ["multiple","libraries","found","dht"], desc: "Установлено несколько версий библиотеки.", solution: "Удалите дубликаты из папки libraries, оставьте одну.", example: "" },
+  { title: "'class Servo' has no member named 'attach'", keywords: ["servo","member","attach","class"], desc: "Опечатка в имени метода или объект не создан.", solution: "Объявите объект Servo и вызывайте метод правильно.", example: "Servo <span class='highlight'>myServo</span>;<br>myServo.attach(9);" },
+  { title: "no matching function for call to 'tone(int, int)'", keywords: ["tone","matching","function","call"], desc: "Неверное количество аргументов.", solution: "tone() принимает 2 или 3 аргумента: <code>tone(pin, freq)</code>.", example: "<span class='highlight'>tone(8, 440);</span>" },
+  { title: "lcd.init() is not available", keywords: ["lcd","init","liquidcrystal"], desc: "В вашей версии библиотеки метод называется иначе.", solution: "Попробуйте <code>lcd.begin(16, 2);</code>.", example: "lcd.<span class='highlight'>begin</span>(16, 2);" },
+  { title: "avrdude: stk500_recv(): programmer is not responding", keywords: ["avrdude","stk500","programmer","responding","port"], desc: "Компьютер не видит плату.", solution: "1. Проверьте USB-кабель (не зарядный). 2. Установите драйвер CH340. 3. Выберите правильный COM-порт.", example: "" },
+  { title: "avrdude: ser_open(): can't open device", keywords: ["avrdude","ser_open","can't open","device","port"], desc: "Порт занят или плата отключена.", solution: "Закройте другие экземпляры IDE и монитор порта. Переподключите плату.", example: "" },
+  { title: "avrdude: ser_open(): can't set com-state for COMn", keywords: ["avrdude","com-state","ch340","driver"], desc: "Проблема с драйвером CH340 (часто на клонах Nano).", solution: "Установите актуальный драйвер CH340 с официального сайта.", example: "" },
+  { title: "Couldn't find a Board on the selected port", keywords: ["board","selected","port","find"], desc: "Плата не определяется на выбранном порту.", solution: "Проверьте подключение, драйверы, выбранную модель платы.", example: "" },
+  { title: "Error compiling for board Arduino Uno", keywords: ["error compiling","board","uno"], desc: "Общая ошибка компиляции.", solution: "Читайте вывод сверху. Первая конкретная ошибка — причина.", example: "" },
+  { title: "exit status 1", keywords: ["exit status","1"], desc: "Общая ошибка (компиляция или загрузка не удалась).", solution: "Смотрите строки перед «exit status 1» — там указана причина.", example: "" },
+  { title: "invalid types 'int[int]' for array subscript", keywords: ["invalid","types","array","subscript"], desc: "Массив индексируется неправильным типом.", solution: "Индекс массива должен быть целым числом.", example: "arr[<span class='highlight'>i</span>]" },
+  { title: "array must be initialized with a brace-enclosed initializer", keywords: ["array","initialized","brace"], desc: "Массив объявлен без инициализации.", solution: "Используйте фигурные скобки.", example: "int arr[] = <span class='highlight'>{1, 2, 3}</span>;" },
+  { title: "assignment of read-only variable", keywords: ["assignment","read-only","variable","const"], desc: "Попытка изменить константу.", solution: "Уберите <code>const</code>, если значение меняется.", example: "int x = 5; // без const" },
+  { title: "warning: integer overflow in expression", keywords: ["warning","integer","overflow","expression"], desc: "Переполнение при вычислении.", solution: "Используйте <code>long</code> или <code>float</code>.", example: "long x = 100000L * 1000;" },
+  { title: "not enough memory", keywords: ["not enough","memory","ram","sram"], desc: "Не хватает оперативной памяти (SRAM).", solution: "Используйте <code>F()</code> для строк, уменьшите массивы.", example: "Serial.print(<span class='highlight'>F(\"Hello\")</span>);" },
+  { title: "low memory available, stability problems may occur", keywords: ["low memory","stability","sram"], desc: "Мало свободной памяти.", solution: "Оптимизируйте строки через <code>F()</code>, сократите глобальные переменные.", example: "" },
+  { title: "calling 'millis()' inside an interrupt", keywords: ["millis","interrupt","isr"], desc: "millis() не работает внутри прерываний.", solution: "Используйте <code>micros()</code> или флаги в основном цикле.", example: "" },
+  { title: "unable to find string literal operator", keywords: ["string literal","operator"], desc: "Проблема с кодировкой или кавычками.", solution: "Проверьте строку на непечатные символы.", example: "" },
+  { title: "no return statement in function returning non-void", keywords: ["return","statement","non-void"], desc: "Функция должна возвращать значение.", solution: "Добавьте <code>return значение;</code>.", example: "int func() {<br>&nbsp;&nbsp;<span class='highlight'>return 0;</span><br>}" }
+];
+
+const searchInput = document.getElementById('searchInput');
+const resultsDiv = document.getElementById('results');
+
+function searchErrors(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) return ERRORS_DB;
+  const words = q.split(/[\s,.:;!?()[\]{}'"]+/).filter(w => w.length > 2);
+  return ERRORS_DB.filter(err => {
+    const t = err.title.toLowerCase();
+    const d = err.desc.toLowerCase();
+    if (t.includes(q) || d.includes(q)) return true;
+    return err.keywords.some(kw => q.includes(kw)) || words.some(w => t.includes(w));
+  });
+}
+
+function render() {
+  const filtered = searchErrors(searchInput.value);
+  if (filtered.length === 0) {
+    resultsDiv.innerHTML = '<div class="empty">Ничего не найдено. Попробуйте ключевые слова: expected, Serial, avrdude, scope.</div>';
+    return;
+  }
+  resultsDiv.innerHTML = filtered.map(err => `
+    <div class="error-card">
+      <div class="error-title">${err.title}</div>
+      <div class="error-desc">${err.desc}</div>
+      <div class="solution-box">
+        <div class="solution-title">Решение</div>
+        <div class="solution-text">${err.solution}</div>
+        ${err.example ? `<div class="code-fix">${err.example}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+searchInput.addEventListener('input', render);
+render();
+</script>
+</body>
+</html>

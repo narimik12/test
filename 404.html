@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Страница не найдена — ArduInfo</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#00979D;--accent-dark:#00767b;--accent-light:#00b5bd;--accent-soft:rgba(0,151,157,.10);
+  --bg:#f5f7f9;--surface:#fff;--text:#0f1a23;--muted:#546679;--border:#d5dde3;
+  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#00c2c9;--accent-dark:#00979D;--accent-soft:rgba(0,194,201,.12);
+  --bg:#090e12;--surface:#111820;--text:#e1e8ee;--muted:#7d8fa3;--border:#212b38;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:grid;place-items:center;padding:24px;line-height:1.6}
+.box{max-width:520px;width:100%;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:48px 32px;box-shadow:0 12px 32px rgba(15,26,35,.08)}
+.icon{font-size:4rem;line-height:1;margin-bottom:20px}
+h1{font-size:clamp(1.6rem,4vw,2rem);font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+p{color:var(--muted);font-size:1rem;margin-bottom:28px}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border-radius:6px;font-weight:700;font-size:.92rem;text-decoration:none;transition:all .12s;border:1px solid transparent;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-ghost{background:transparent;color:var(--text);border-color:var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.hint{font-family:var(--mono);font-size:.78rem;color:var(--muted);background:var(--bg);padding:8px 14px;border-radius:6px;margin-top:24px;display:inline-block}
+.theme-btn{position:fixed;top:20px;right:20px;width:36px;height:36px;border-radius:6px;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:1rem;display:grid;place-items:center}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeToggle" aria-label="Тема">🌙</button>
+<div class="box">
+  <div class="icon">🔌</div>
+  <h1>Страница не найдена</h1>
+  <p>Запрашиваемая страница не существует или была перемещена.</p>
+  <div class="actions">
+    <a class="btn btn-primary" href="index.html#">← На главную</a>
+    <a class="btn btn-ghost" href="index.html#/projects">Проекты</a>
+    <a class="btn btn-ghost" href="index.html#/resistor">Резисторы</a>
+  </div>
+  <div class="hint">404 Not Found</div>
+</div>
+
+<script>
+(function(){
+  let saved = null;
+  try { saved = localStorage.getItem('arduinfo-theme'); } catch(e){}
+  if(!saved) saved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+})();
+document.getElementById('themeToggle').addEventListener('click', function(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  this.textContent = next === 'dark' ? '☀️' : '🌙';
+  try { localStorage.setItem('arduinfo-theme', next); } catch(e){}
+});
+</script>
+</body>
+</html>

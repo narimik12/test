@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /404.html
+
+# Yandex
+User-agent: Yandex
+Allow: /
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&uid
+
+Sitemap: https://arduinfo.ru/sitemap.xml
+Host: https://arduinfo.ru

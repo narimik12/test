@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArduInfo — проекты, калькуляторы, справочники</title>
+<meta name="description" content="Готовые проекты на Arduino, калькуляторы компонентов и справочные материалы. Схемы подключения, код и пояснения.">
+<meta name="keywords" content="Arduino, проекты, скетчи, резистор, закон Ома, HC-SR04, DHT11, LCD1602, PWM">
+<meta name="author" content="ArduInfo">
+<meta name="theme-color" content="#00979D">
+<meta name="color-scheme" content="light dark">
+
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="ArduInfo — проекты и инструменты для Arduino">
+<meta property="og:description" content="Готовые скетчи, калькуляторы и справочные материалы.">
+<meta property="og:site_name" content="ArduInfo">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css">
+
+<script data-goatcounter="https://narim.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#app">Перейти к содержимому</a>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="#/" class="logo" aria-label="ArduInfo — на главную">
+      <span class="logo-mark">A</span>
+      <span class="logo-text">Ardu<strong>Info</strong></span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Основная">
+      <a href="#/">Главная</a>
+      <a href="#/projects">Проекты</a>
+      <a href="#/tools">Инструменты</a>
+      <a href="#/resistor">Резисторы</a>
+      <a href="#/basics">Основы</a>
+      <a href="#/about">О сайте</a>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="Переключить тему" title="Тема"></button>
+      <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="Меню" aria-expanded="false" title="Меню"></button>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-about">
+        <a href="#/" class="logo" aria-label="ArduInfo">
+          <span class="logo-mark">A</span>
+          <span class="logo-text">Ardu<strong>Info</strong></span>
+        </a>
+        <p>Проекты, калькуляторы и справочники по Arduino. Открытый исходный код.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Разделы</h4>
+        <ul>
+          <li><a href="#/projects">Проекты</a></li>
+          <li><a href="#/tools">Инструменты</a></li>
+          <li><a href="#/resistor">Резисторы</a></li>
+          <li><a href="#/basics">Основы</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Популярное</h4>
+        <ul>
+          <li><a href="#/project/blink">Blink</a></li>
+          <li><a href="#/project/ultrasonic">Дальномер</a></li>
+          <li><a href="#/project/dht11">DHT11</a></li>
+          <li><a href="#/project/lcd1602">LCD 1602</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Информация</h4>
+        <ul>
+          <li><a href="#/about">О сайте</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2025</span> ArduInfo</span>
+      <span>Материалы в образовательных целях</span>
+    </div>
+  </div>
+</footer>
+
+<button id="aiToggle" type="button" aria-label="Спросить ИИ" title="Спросить ИИ"></button>
+
+<div id="aiWindow" role="dialog" aria-label="AI-помощник">
+  <div id="aiHead">
+    <span id="aiTitle" style="display:inline-flex;align-items:center;gap:8px">Помощник Arduino</span>
+    <button id="aiClose" type="button" aria-label="Закрыть">✕</button>
+  </div>
+  <div id="aiBody">
+    <div class="msg bot">Привет. Спроси про код, схемы подключения или датчики.</div>
+  </div>
+  <div id="aiInput">
+    <input type="text" id="aiText" placeholder="Например: как подключить кнопку?" maxlength="500" autocomplete="off">
+    <button id="aiSend" type="button">→</button>
+  </div>
+</div>
+
+<script src="icons.js"></script>
+<script src="js/data.js"></script>
+<script src="js/pages.js"></script>
+<script src="js/app.js"></script>
+<script>
+document.getElementById('aiToggle').innerHTML = icon('robot', 22);
+document.getElementById('aiTitle').insertAdjacentHTML('afterbegin', icon('robot', 16));
+document.getElementById('menuBtn').innerHTML = icon('menu', 18);
+</script>
+</body>
+</html>
